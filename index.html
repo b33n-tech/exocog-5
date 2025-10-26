@@ -2,92 +2,64 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Outil Tâches + Modules</title>
+<title>Outil Tâches + Prompts</title>
 <style>
-  body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4; }
-  header { background:#222; color:#fff; padding:15px; text-align:center; }
-  header select { font-size:1em; padding:5px; margin-left:10px; }
-  main { display:flex; flex-wrap: wrap; padding:15px; gap:15px; }
-  section { background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); flex:1 1 45%; min-width:300px; }
-  h2 { margin-top:0; }
-  .task-item { border-bottom:1px solid #ddd; padding:5px; cursor:pointer; }
-  .task-item:hover { background:#f0f0f0; }
-  .comment-section { margin-top:5px; display:none; flex-direction:column; }
-  .comment-input { display:flex; gap:5px; margin-top:5px; }
-  .comment-list { list-style:none; padding-left:10px; margin:0; }
-  button { cursor:pointer; padding:5px 10px; border:none; border-radius:4px; background:#007bff; color:#fff; }
-  button:hover { background:#0056b3; }
-  textarea { width:100%; min-height:100px; margin-top:5px; padding:5px; border-radius:4px; border:1px solid #ccc; font-family:monospace; }
-  ul { padding-left:15px; }
-  .modules-list li { margin-bottom:5px; }
-  .checkbox { margin-right:5px; }
-  .buttons-row { margin-top:10px; display:flex; gap:5px; flex-wrap:wrap; }
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; background:#f7f7f7; }
+header { background:#0044aa; color:white; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; }
+header h1 { margin:0; font-size:1.5em; }
+main { display:flex; padding:20px; gap:20px; }
+.section { background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); flex:1; }
+#taskInput { width:80%; padding:6px; font-size:1em; }
+button { padding:5px 10px; margin:2px; cursor:pointer; }
+.task-item { border-bottom:1px solid #ddd; padding:5px 0; }
+.comment-section { flex-direction:column; margin-top:5px; background:#f1f1f1; padding:5px; border-radius:5px; }
+.comment-list { margin:0; padding-left:15px; }
+.comment-input { display:flex; gap:5px; margin-top:5px; }
+#promptsContainer button { background:#0044aa; color:white; border:none; border-radius:4px; }
+#tasksContainer { max-height:400px; overflow-y:auto; }
 </style>
 </head>
 <body>
 
 <header>
-  <strong>Choix LLM :</strong>
+  <h1>Outil Tâches + Prompts</h1>
   <select id="llmSelect">
-    <option value="https://chat.openai.com/">ChatGPT</option>
-    <option value="https://perplexity.ai/">Perplexity</option>
+    <option value="https://chat.openai.com/">GPT</option>
+    <option value="https://www.perplexity.ai/">Perplexity</option>
     <option value="https://www.anthropic.com/claude">Claude</option>
-    <option value="https://mistral.ai/">Mistral</option>
+    <option value="https://www.mistral.ai/">Mistral</option>
   </select>
 </header>
 
 <main>
-  <!-- Section Tâches -->
-  <section id="tasksSection">
-    <h2>Tâches</h2>
-    <input type="text" id="taskInput" placeholder="Nouvelle tâche..." style="width:70%;">
-    <button id="addBtn">Ajouter</button>
-    <ul id="tasksContainer"></ul>
-    <div class="buttons-row">
+  <div class="section" style="flex:0.5;">
+    <h2>Input tâches</h2>
+    <div>
+      <input type="text" id="taskInput" placeholder="Nouvelle tâche…">
+      <button id="addBtn">Ajouter</button>
+    </div>
+    <div class="buttons-row" style="margin-top:10px;">
       <button id="clearBtn">🧹 Tout nettoyer</button>
       <button id="archiveBtn">📂 Archiver JSON</button>
     </div>
-  </section>
+    <ul id="tasksContainer"></ul>
+  </div>
 
-  <!-- Section JSON intermédiaire -->
-  <section id="jsonSection">
-    <h2>JSON intermédiaire</h2>
-    <textarea id="jsonTextarea" placeholder="Copiez ici le JSON du LLM..."></textarea>
-    <button id="pushJsonBtn">Envoyer ce batch → Modules</button>
-  </section>
-
-  <!-- Section Modules / Stack 2 -->
-  <section id="modulesSection">
-    <h2>Modules</h2>
-    <h3>Jalons & Sous-actions</h3>
-    <ul id="jalonsList" class="modules-list"></ul>
-
-    <h3>Messages / Emails</h3>
-    <ul id="messagesList" class="modules-list"></ul>
-
-    <h3>Réunions / RDV</h3>
-    <ul id="rdvList" class="modules-list"></ul>
-
-    <h3>Livrables</h3>
-    <ul id="livrablesList" class="modules-list"></ul>
-
-    <div class="buttons-row">
-      <button id="pushModulesBtn">Push vers LLM</button>
-    </div>
-  </section>
+  <div class="section">
+    <h2>Prompts</h2>
+    <div id="promptsContainer"></div>
+  </div>
 </main>
 
 <script>
-// --- Tâches + commentaires ---
+// --- JS complet ---
 const taskInput = document.getElementById("taskInput");
 const addBtn = document.getElementById("addBtn");
 const tasksContainer = document.getElementById("tasksContainer");
 const clearBtn = document.getElementById("clearBtn");
 const archiveBtn = document.getElementById("archiveBtn");
 const llmSelect = document.getElementById("llmSelect");
-const jsonTextarea = document.getElementById("jsonTextarea");
-const pushJsonBtn = document.getElementById("pushJsonBtn");
+const promptsContainer = document.getElementById("promptsContainer");
 
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
@@ -98,23 +70,35 @@ function renderTasks(){
   tasks.forEach((task,i)=>{
     const li=document.createElement("li");
     li.className="task-item";
-    li.textContent = task.text + " ("+formatDate(task.date)+")";
-    if(task.comments?.length) li.title=task.comments.map(c=>`• ${c.text} (${formatDate(c.date)})`).join("\n");
+
+    const taskText=document.createElement("div");
+    taskText.textContent = task.text + " ("+formatDate(task.date)+")";
+    taskText.style.cursor="pointer";
+
     const commentBlock=document.createElement("div");
     commentBlock.className="comment-section";
+    commentBlock.style.display="none";
+
+    const commentList=document.createElement("ul");
+    commentList.className="comment-list";
     if(task.comments?.length){
-      const ul=document.createElement("ul");
-      task.comments.forEach(c=>{ const cLi=document.createElement("li"); cLi.textContent=`[${formatDate(c.date)}] ${c.text}`; ul.appendChild(cLi); });
-      commentBlock.appendChild(ul);
+      task.comments.forEach(c=>{
+        const cLi=document.createElement("li");
+        cLi.textContent=`[${formatDate(c.date)}] ${c.text}`;
+        commentList.appendChild(cLi);
+      });
     }
+    commentBlock.appendChild(commentList);
+
     const commentInputDiv=document.createElement("div");
     commentInputDiv.className="comment-input";
     const commentInput=document.createElement("input");
     commentInput.placeholder="Ajouter un commentaire…";
     const commentBtn=document.createElement("button");
     commentBtn.textContent="+";
-    commentBtn.addEventListener("click", ()=>{
-      const val = commentInput.value.trim();
+    commentBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const val=commentInput.value.trim();
       if(val!==""){
         if(!task.comments) task.comments=[];
         task.comments.push({text:val,date:new Date().toISOString()});
@@ -123,18 +107,24 @@ function renderTasks(){
         renderTasks();
       }
     });
+
     commentInputDiv.appendChild(commentInput);
     commentInputDiv.appendChild(commentBtn);
     commentBlock.appendChild(commentInputDiv);
+
+    taskText.addEventListener("click", ()=>{
+      commentBlock.style.display = commentBlock.style.display==="none"?"flex":"none";
+    });
+
+    li.appendChild(taskText);
     li.appendChild(commentBlock);
-    li.addEventListener("click", ()=>{ commentBlock.style.display = commentBlock.style.display==="none"?"flex":"none"; });
-    commentBlock.style.display="none";
     tasksContainer.appendChild(li);
   });
 }
 
+// --- Ajouter tâche ---
 addBtn.addEventListener("click", ()=>{
-  const text = taskInput.value.trim();
+  const text=taskInput.value.trim();
   if(text!==""){
     tasks.push({text,date:new Date().toISOString(),comments:[]});
     localStorage.setItem("tasks",JSON.stringify(tasks));
@@ -143,84 +133,49 @@ addBtn.addEventListener("click", ()=>{
   }
 });
 
+// --- Nettoyer / Archiver ---
 clearBtn.addEventListener("click", ()=>{
   if(confirm("Es-tu sûr ? Cette action est irréversible !")){
-    tasks=[];
-    localStorage.removeItem("tasks");
-    renderTasks();
+    tasks=[]; localStorage.removeItem("tasks"); renderTasks();
   }
 });
 
 archiveBtn.addEventListener("click", ()=>{
-  if(tasks.length===0){ alert("Aucune tâche à archiver !"); return; }
+  if(tasks.length===0){ alert("Aucune tâche !"); return; }
   const blob = new Blob([JSON.stringify(tasks,null,2)],{type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href=url;
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url;
   a.download=`taches_${new Date().toISOString().slice(0,19).replace(/:/g,"-")}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 });
 
-// --- Push JSON vers modules ---
-const jalonsList=document.getElementById("jalonsList");
-const messagesList=document.getElementById("messagesList");
-const rdvList=document.getElementById("rdvList");
-const livrablesList=document.getElementById("livrablesList");
+// --- Section prompts ---
+const promptList=[
+  {id:"planifier",label:"Plan",text:"Transforme ces tâches en plan structuré étape par étape :"},
+  {id:"prioriser",label:"Priorité",text:"Classe ces tâches par ordre de priorité et urgence :"},
+  {id:"categoriser",label:"Catégories",text:"Range ces tâches dans des catégories logiques :"}
+];
 
-function clearModules(){ jalonsList.innerHTML=""; messagesList.innerHTML=""; rdvList.innerHTML=""; livrablesList.innerHTML=""; }
-
-pushJsonBtn.addEventListener("click", ()=>{
-  try{
-    const data = JSON.parse(jsonTextarea.value);
-    clearModules();
-    if(data.jalons) data.jalons.forEach(j=>{
-      const li=document.createElement("li"); li.textContent=j.titre; jalonsList.appendChild(li);
+promptsContainer.innerHTML="";
+promptList.forEach(p=>{
+  const btn=document.createElement("button");
+  btn.textContent=p.label;
+  btn.addEventListener("click", ()=>{
+    let combined=p.text + "\n\n" + tasks.map(t=>{
+      let str="- "+t.text;
+      if(t.comments?.length){
+        str+="\n  Commentaires :\n"+t.comments.map(c=>`    - [${formatDate(c.date)}] ${c.text}`).join("\n");
+      }
+      return str;
+    }).join("\n");
+    navigator.clipboard.writeText(combined).then(()=>{
+      window.open(llmSelect.value,"_blank");
+      alert("✅ Prompt + tâches copiés, LLM ouvert !");
     });
-    if(data.messages) data.messages.forEach(m=>{
-      const li=document.createElement("li"); 
-      const cb=document.createElement("input"); cb.type="checkbox"; cb.className="checkbox"; li.appendChild(cb);
-      li.appendChild(document.createTextNode(`${m.sujet} → ${m.destinataire}`));
-      messagesList.appendChild(li);
-    });
-    if(data.rdv) data.rdv.forEach(r=>{
-      const li=document.createElement("li"); li.textContent=`${r.titre} le ${r.date}`; rdvList.appendChild(li);
-    });
-    if(data.livrables) data.livrables.forEach(l=>{
-      const li=document.createElement("li");
-      const cb=document.createElement("input"); cb.type="checkbox"; cb.className="checkbox"; li.appendChild(cb);
-      li.appendChild(document.createTextNode(`${l.titre} (${l.type})`));
-      livrablesList.appendChild(li);
-    });
-    // Télécharger batch JSON
-    const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a=document.createElement("a"); a.href=url;
-    a.download=`batch_${new Date().toISOString().slice(0,19).replace(/:/g,"-")}.json`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    alert("✅ JSON injecté dans modules et téléchargé !");
-  }catch(err){ console.error(err); alert("❌ JSON invalide !"); }
+  });
+  promptsContainer.appendChild(btn);
 });
 
-// --- Push modules vers LLM ---
-const pushModulesBtn=document.getElementById("pushModulesBtn");
-pushModulesBtn.addEventListener("click", ()=>{
-  let content="";
-  messagesList.querySelectorAll("li").forEach(li=>{
-    const cb = li.querySelector("input[type=checkbox]");
-    if(cb.checked) content+=li.textContent+"\n";
-  });
-  livrablesList.querySelectorAll("li").forEach(li=>{
-    const cb = li.querySelector("input[type=checkbox]");
-    if(cb.checked) content+=li.textContent+"\n";
-  });
-  if(content===""){ alert("Sélectionne au moins un élément !"); return; }
-  navigator.clipboard.writeText(content).then(()=>{
-    window.open(llmSelect.value,"_blank");
-    alert("✅ Contenu copié, LLM ouvert !");
-  });
-});
-
-// --- Initial render ---
 renderTasks();
 </script>
 
